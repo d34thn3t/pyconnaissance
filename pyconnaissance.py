@@ -85,7 +85,7 @@ def get_default_gateway():
 
 def netmap(range_ip):
 
-	os.system("nmap -T4 -O -sV -oX - "+range_ip+" > "+sys.argv[2]+".xml")
+	os.system("nmap -sU -T4 -O -sV -oX - "+range_ip+" > "+sys.argv[2]+".xml")
 	
 #convert nmap's xml output to html
 
