@@ -4,12 +4,13 @@ import datetime
 import sys
 import os
 import subprocess
+import threading
 
 #make sure all arguments are provided, if not then exit with this message
 
-if len(sys.argv)!=3:
+if len(sys.argv)!=4:
 
-	print("Usage: python3 pyconnaissance.py <interface> <log file>")
+	print("Usage: python3 pyconnaissance.py <interface> <log file> <desired run time(seconds)>")
 
 	exit()
 	
@@ -97,11 +98,29 @@ def xml_to_html():
 
 #start arpspoof to prepare for network sniffing
 
+global arp_proc
+
 def arpspoof(router):
 
-	os.system("arpspoof -i "+sys.argv[1]+" -r "+router)
-
 	f.write("Started arpspoof on "+sys.argv[1]+" - target is "+router+"\n")
+
+	arp_proc=subprocess.Popen(['arpspoof','i',sys.argv[1],'-r',router])
+
+#start tcpdump
+
+def tcpdump():
+
+	subprocess.run(["tcpdump","-i",sys.argv[1],"-W","1","-vv","-n","-w",sys.argv[2]+".pcap","-G",sys.argv[3]])
+
+def netsniff(router_ip):
+
+	arpthread=threading.Thread(target=arpspoof,args=(router_ip))
+
+	arpthread.start()
+
+	tcpdump()
+
+	arp_proc.kill()
 
 #main code
 
@@ -140,6 +159,8 @@ netmap(ip_range)
 #convert xml output of nmap to html
 
 xml_to_html()
+
+netsniff(default_gateway)
 
 #close main log
 
