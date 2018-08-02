@@ -17,6 +17,12 @@ if len(sys.argv)!=4:
 	print("Usage: python3 pyconnaissance.py <interface> <log file> <desired run time(seconds)>")
 
 	exit()
+
+#write command output to log file
+
+def logcmdout(args):
+
+	subprocess.run(args,stdout=f)
 	
 #get host address on current interface
 
@@ -120,6 +126,8 @@ def tcpdump():
 
 def netsniff(router_ip):
 
+	iptables_flush()
+
 	arpthread=threading.Thread(target=arpspoof)
 
 	arpthread.start()
@@ -127,6 +135,22 @@ def netsniff(router_ip):
 	tcpdump()
 
 	arpthread.join()
+
+	iptables_flush()
+
+#solution to some arpspoof issues
+
+def iptables_flush():
+
+	f.write("Flushing iptables....\n")
+
+	logcmdout(['iptables','--flush'])
+
+	logcmdout(['iptables','--table','nat','--flush'])
+
+	logcmdout(['iptables','--delete-chain'])
+
+	logcmdout(['iptables','--table','nat','--delete-chain'])
 
 #main code
 
