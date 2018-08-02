@@ -9,6 +9,7 @@ Usage: python3 pyconnaissance.py <interface> <log file name>
   
 It will save basic information such as host IP, router IP and IP address range in a log file with no extension.
 Information gathered by nmap will be stored in an HTML file.
+It will sniff the network and store various types of information in different files.
 
 More Features will be added soon.
 
