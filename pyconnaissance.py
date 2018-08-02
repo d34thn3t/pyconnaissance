@@ -180,7 +180,7 @@ default_gateway=get_default_gateway()
 
 #run nmap
 
-netmap(default_gateway)
+netmap(ip_range)
 
 #convert xml output of nmap to html
 
