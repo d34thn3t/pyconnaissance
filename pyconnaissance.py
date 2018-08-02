@@ -6,6 +6,10 @@ import os
 import subprocess
 import threading
 
+#create a place to send certain command output
+
+FNULL=open(os.devnull,'w')
+
 #make sure all arguments are provided, if not then exit with this message
 
 if len(sys.argv)!=4:
@@ -98,29 +102,31 @@ def xml_to_html():
 
 #start arpspoof to prepare for network sniffing
 
-global arp_proc
+def arpspoof():
 
-def arpspoof(router):
+	time=str(int(sys.argv[3])+10)
 
-	f.write("Started arpspoof on "+sys.argv[1]+" - target is "+router+"\n")
+	f.write("Started arpspoof on "+sys.argv[1]+" - target is "+default_gateway+"\n")
 
-	arp_proc=subprocess.Popen(['arpspoof','i',sys.argv[1],'-r',router])
+	arp_proc=subprocess.Popen(['timeout',time,'arpspoof','-i',sys.argv[1],default_gateway],stdout=FNULL,stderr=FNULL)
 
 #start tcpdump
 
 def tcpdump():
 
-	subprocess.run(["tcpdump","-i",sys.argv[1],"-W","1","-vv","-n","-w",sys.argv[2]+".pcap","-G",sys.argv[3]])
+	t=subprocess.run(["tcpdump","-i",sys.argv[1],"-W","1","-vv","-n","-w",sys.argv[2]+".pcap","-G",sys.argv[3]],stdout=FNULL,stderr=FNULL)
+
+#sniff the network
 
 def netsniff(router_ip):
 
-	arpthread=threading.Thread(target=arpspoof,args=(router_ip))
+	arpthread=threading.Thread(target=arpspoof)
 
 	arpthread.start()
 
 	tcpdump()
 
-	arp_proc.kill()
+	arpthread.join()
 
 #main code
 
@@ -148,17 +154,15 @@ ip_range=get_ip_range()
 
 default_gateway=get_default_gateway()
 
-#close main log
-
-f.close()
-
 #run nmap
 
-netmap(ip_range)
+netmap(default_gateway)
 
 #convert xml output of nmap to html
 
 xml_to_html()
+
+#sniff the network
 
 netsniff(default_gateway)
 
