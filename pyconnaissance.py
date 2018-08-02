@@ -21,7 +21,7 @@ def get_local_addr():
 
 	return local_addr
 
-#get range of ip addresses to be used by nmap
+#get subnet to be used by nmap
 
 def get_ip_range():
 
@@ -85,7 +85,7 @@ def get_default_gateway():
 
 def netmap(range_ip):
 
-	os.system("nmap -sU -T4 -p1-65535 -O -sV -oX - "+range_ip+" > "+sys.argv[2]+".xml")
+	os.system("nmap -T4 -O -sV -oX - "+range_ip+" > "+sys.argv[2]+".xml")
 	
 #convert nmap's xml output to html
 
@@ -94,7 +94,15 @@ def xml_to_html():
 	os.system("xsltproc "+sys.argv[2]+".xml > "+sys.argv[2]+".html")
 	
 	os.system("rm "+sys.argv[2]+".xml")
-	
+
+#start arpspoof to prepare for network sniffing
+
+def arpspoof(router):
+
+	os.system("arpspoof -i "+sys.argv[1]+" -r "+router)
+
+	f.write("Started arpspoof on "+sys.argv[1]+" - target is "+router+"\n")
+
 #main code
 
 #get start time
@@ -113,7 +121,7 @@ f.write("Started at "+str(start_time)+"\n")
 
 f.write("Host Address: "+get_local_addr()+"\n")
 
-#set value to the ip range for nmap
+#set value to the subnet for nmap
 
 ip_range=get_ip_range()
 
@@ -129,9 +137,13 @@ f.close()
 
 netmap(ip_range)
 
-#conver xml output of nmap to html
+#convert xml output of nmap to html
 
 xml_to_html()
+
+#close main log
+
+f.close()
 
 
 
